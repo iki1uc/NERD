@@ -5,3 +5,6 @@ function nerdCharm(name = "Tomaten-Sammler") {
 
     return `${name}, du bist offiziell: ${nerd} | ${charm} | ${rums}`;
 }
+function zwick(name = "Zwick") {
+    return `${name}: zwickt kurz, wirkt lang.`;
+}
