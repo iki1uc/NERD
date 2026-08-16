@@ -1,28 +1,34 @@
-# Station: [NAME]
+# NERD Station — 6 Moves Cube System
 
-Dieses Modul ist Teil der 360°‑Rotation:
+Die Station besteht aus einem vollständigen Energie‑System mit 6 Moves,
+die zusammen den NERD bilden. NERD ist nicht eine Datei, nicht ein Modul,
+sondern das gesamte System.
 
-DA → NE → BEN → KI → DA
+## 6 Moves (Cube)
 
-## 3‑6‑9‑0‑3 System
-- DA = 3 (Start)
-- NE = 6 (Mitte)
-- BEN = 9 (Vollendung)
-- KI = 0 (Kern)
-- DA = 3 (Neustart)
+1. **ESSO** – Primärenergie  
+2. **ROLLER** – Verbindungsenergie  
+3. **KASSE** – Seitenenergie  
+4. **DOOR** – Firewall‑Emulator  
+5. **DOO** – tmp reg user use (Freipass)  
+6. **SHELL** – Halterenergie
 
-## Funktion der Station
-Diese Station repräsentiert: **[NAME]**
+Diese sechs Moves bilden den Cube. Jede Seite ist ein Energie‑Move.
 
-Sie trägt die Rotation weiter zur nächsten Station:
-**[NEXT]**
+## Dateien
 
-## KI‑RESPO
-Aktive KI‑RESPO‑Nummer: **327**
+- `shell.js` – Hauptmotor (ESSO, ROLLER, KASSE, DOOR, DOO, SHELL)
+- `NC.math` – Energie‑Maße & Cube‑Berechnung
+- `gicik.js` – GICIK‑Move
+- `zwick.js` – ZWICK‑Move
+- `nerdCharm.js` – Charm‑Modul
+- `nohero.js` – Antiheld‑Modul
+- `index.html` – Frontend‑Portal
+- `ERD` – Root‑Station
+- `X.tmp`, `Z.tmp`, `NE.tmp`, `DA.tmp`, `BEN.tmp` – DOO‑Slots (tmp reg user use)
 
-327 = DA(3) → NE(2) → BEN(7)
+## Station
 
-## Zweck
-Dieses Modul ist ein Teil der vollständigen 360°‑Struktur.
-Es arbeitet im Verbund mit allen anderen Stationen.
+Die Station ist vorläufig fertig.  
+NERD = das gesamte System, nicht ein einzelner Move.
 
