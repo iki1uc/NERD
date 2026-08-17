@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NERD Station · 6 Moves Cube · 4u · iki1uc</title>
+<title>NERD · 6 MOVES CUBE · LIVE</title>
 
 <style>
 :root {
@@ -294,11 +294,11 @@ button.danger:hover { background: #f44; color: #000; }
 
 <script>
 // ============================================================
-// 1. NERD STATION · 6 MOVES CUBE
+// NERD · 6 MOVES CUBE · ALLES IN EINER DATEI
 // ============================================================
 
 // --- MOVES ---
-const MOVES = {
+var MOVES = {
     ESSO:   { sym: '⚡', label: 'ESSO', desc: 'Primärenergie', color: '#ff6b6b', class: 'esso' },
     ROLLER: { sym: '🌀', label: 'ROLLER', desc: 'Verbindung', color: '#6bff6b', class: 'roller' },
     KASSE:  { sym: '📦', label: 'KASSE', desc: 'Seitenenergie', color: '#6b6bff', class: 'kasse' },
@@ -306,49 +306,49 @@ const MOVES = {
     DOO:    { sym: '🔑', label: 'DOO', desc: 'tmp reg user use', color: '#ff44ff', class: 'doo' },
     SHELL:  { sym: '🐚', label: 'SHELL', desc: 'Halter', color: '#6cf', class: 'shell' }
 };
-const MOVE_KEYS = ['ESSO', 'ROLLER', 'KASSE', 'DOOR', 'DOO', 'SHELL'];
+var MOVE_KEYS = ['ESSO', 'ROLLER', 'KASSE', 'DOOR', 'DOO', 'SHELL'];
 
-// --- TMP-SLOTS (DA, NE, BEN) ---
-const TMP_SLOTS = {
+// --- TMP-SLOTS ---
+var TMP_SLOTS = {
     DA:  { role: 'du', mode: ['swap','handover','leave'], state: 'active' },
     NE:  { role: 'er', mode: ['swap','handover','leave'], state: 'active' },
     BEN: { role: 'ich', mode: ['swap','handover','leave'], state: 'active' }
 };
 
 // --- NC.MATH ---
-const NC_MATH = {
+var NC_MATH = {
     signatur: '<BUCHSTABE>',
     achsen: ['6e', 'x', 'y', 't', 'h', 'b'],
     orbit: ['q', 'u', 'i', 'o'],
     evo: ['QI', 'IQQ', 'upg', 'upd', 'rev'],
-    matrix: '3x3 → 9x9 → 81x81',
-    lage: { X: '<POS-X>', Y: '<POS-Y>', T: '<POS-T>', H: '<POS-H>', B: '<POS-B>' },
-    output: { mode: 'HOLO', type: 'NAVI-DATA', clean: true }
+    matrix: '3x3 → 9x9 → 81x81'
 };
 
 // ============================================================
-// 2. CANVAS SETUP
+// CANVAS SETUP
 // ============================================================
-const canvas = document.getElementById('nerdCanvas');
-const ctx = canvas.getContext('2d');
-let W, H, cx, cy, radius;
+var canvas = document.getElementById('nerdCanvas');
+var ctx = canvas.getContext('2d');
+var W, H, cx, cy, radius;
 
 function resizeCanvas() {
-    const wrap = document.getElementById('canvas-wrap');
-    const rect = wrap.getBoundingClientRect();
+    var wrap = document.getElementById('canvas-wrap');
+    var rect = wrap.getBoundingClientRect();
     canvas.width = rect.width;
     canvas.height = rect.height;
-    W = canvas.width; H = canvas.height;
-    cx = W / 2; cy = H / 2;
+    W = canvas.width;
+    H = canvas.height;
+    cx = W / 2;
+    cy = H / 2;
     radius = Math.min(W, H) * 0.38;
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
 // ============================================================
-// 3. STATE
+// STATE
 // ============================================================
-const state = {
+var state = {
     running: false,
     autoMode: false,
     cycle: 0,
@@ -363,44 +363,49 @@ const state = {
         SHELL: 0.5
     },
     tmpSlots: TMP_SLOTS,
-    ncMath: NC_MATH,
     cubeAngle: 0
 };
 
 // ============================================================
-// 4. LOG
+// LOG
 // ============================================================
-function log(msg, type = 'info') {
-    const logDiv = document.getElementById('log');
-    const entry = document.createElement('div');
+function log(msg, type) {
+    var logDiv = document.getElementById('log');
+    var entry = document.createElement('div');
     entry.className = 'entry';
-    const time = new Date().toLocaleTimeString();
-    const cls = type === 'nerd' ? 'nerd' : type === 'esso' ? 'esso' :
-                type === 'roller' ? 'roller' : type === 'kasse' ? 'kasse' :
-                type === 'door' ? 'door' : type === 'doo' ? 'doo' :
-                type === 'shell' ? 'shell' : '';
-    entry.innerHTML = `<span class="time">[${time}]</span> <span class="msg ${cls}">${msg}</span>`;
+    var time = new Date().toLocaleTimeString();
+    var cls = type === 'nerd' ? 'nerd' : type === 'esso' ? 'esso' :
+              type === 'roller' ? 'roller' : type === 'kasse' ? 'kasse' :
+              type === 'door' ? 'door' : type === 'doo' ? 'doo' :
+              type === 'shell' ? 'shell' : '';
+    entry.innerHTML = '<span class="time">[' + time + ']</span> <span class="msg ' + cls + '">' + msg + '</span>';
     logDiv.appendChild(entry);
     logDiv.scrollTop = logDiv.scrollHeight;
     while (logDiv.children.length > 50) logDiv.removeChild(logDiv.firstChild);
 }
 
 // ============================================================
-// 5. NERD · KERN
+// NERD KERN
 // ============================================================
 
 function activateMove(key) {
     state.activeMove = key;
-    const move = MOVES[key];
-    document.querySelectorAll('.move').forEach(el => {
-        el.classList.toggle('active', el.dataset.move === key);
-    });
-    log(`${move.sym} ${move.label} · ${move.desc}`, move.class);
+    var move = MOVES[key];
+    var els = document.querySelectorAll('.move');
+    for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        if (el.getAttribute('data-move') === key) {
+            el.classList.add('active');
+        } else {
+            el.classList.remove('active');
+        }
+    }
+    log(move.sym + ' ' + move.label + ' · ' + move.desc, move.class);
 }
 
 function updateEnergies() {
-    const e = state.energies;
-    const t = state.t;
+    var e = state.energies;
+    var t = state.t;
     e.ESSO = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 0.3));
     e.ROLLER = 0.3 + 0.7 * (0.5 + 0.5 * Math.cos(t * 0.25));
     e.KASSE = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 0.35 + 1));
@@ -416,12 +421,13 @@ function updateEnergies() {
 
 function moveCube() {
     state.cubeAngle += 0.02;
-    // TMP-Slots rotieren
-    const slots = ['DA', 'NE', 'BEN'];
-    slots.forEach((s, i) => {
-        const idx = (Math.floor(state.t * 0.1) + i) % slots.length;
-        state.tmpSlots[s].role = ['du', 'er', 'ich'][idx];
-    });
+    var slots = ['DA', 'NE', 'BEN'];
+    for (var i = 0; i < slots.length; i++) {
+        var s = slots[i];
+        var idx = (Math.floor(state.t * 0.1) + i) % slots.length;
+        var roles = ['du', 'er', 'ich'];
+        state.tmpSlots[s].role = roles[idx];
+    }
 }
 
 function shellStart() {
@@ -435,12 +441,12 @@ function shellStart() {
 }
 
 // ============================================================
-// 6. RENDER — NERD CUBE
+// RENDER
 // ============================================================
 function render() {
     ctx.clearRect(0, 0, W, H);
 
-    const grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, W * 0.6);
+    var grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, W * 0.6);
     grad.addColorStop(0, '#0a0a1a');
     grad.addColorStop(1, '#000');
     ctx.fillStyle = grad;
@@ -456,11 +462,10 @@ function render() {
         updateEnergies();
         moveCube();
         if (state.cycle % 30 === 0) {
-            const keys = MOVE_KEYS;
-            const idx = Math.floor(Math.random() * keys.length);
-            activateMove(keys[idx]);
+            var idx = Math.floor(Math.random() * MOVE_KEYS.length);
+            activateMove(MOVE_KEYS[idx]);
         }
-        document.getElementById('cycle-display').textContent = `CUBE ${state.cycle}`;
+        document.getElementById('cycle-display').textContent = 'CUBE ' + state.cycle;
     }
 
     requestAnimationFrame(render);
@@ -468,38 +473,36 @@ function render() {
 render();
 
 // ============================================================
-// 7. ZEICHEN-FUNKTIONEN
+// ZEICHEN-FUNKTIONEN
 // ============================================================
 
 function drawCube() {
-    const r = radius * 0.5;
-    const angle = state.cubeAngle;
+    var r = radius * 0.5;
+    var angle = state.cubeAngle;
+    var size = r * 0.6;
+    var colors = ['#ff6b6b', '#6bff6b', '#6b6bff', '#ffd93d', '#ff44ff', '#6cf'];
+    var labels = ['ESSO', 'ROLLER', 'KASSE', 'DOOR', 'DOO', 'SHELL'];
+    var angles = [0, 60, 120, 180, 240, 300];
+    for (var i = 0; i < angles.length; i++) {
+        angles[i] = angles[i] * Math.PI / 180 + angle;
+    }
 
-    // Würfel (3D-Projektion)
-    const size = r * 0.6;
-    const colors = ['#ff6b6b', '#6bff6b', '#6b6bff', '#ffd93d', '#ff44ff', '#6cf'];
-    const labels = ['ESSO', 'ROLLER', 'KASSE', 'DOOR', 'DOO', 'SHELL'];
-    const angles = [0, 60, 120, 180, 240, 300].map(a => a * Math.PI / 180 + angle);
+    for (var i = 0; i < 6; i++) {
+        var a = angles[i];
+        var x = cx + Math.cos(a) * size * 0.8;
+        var y = cy + Math.sin(a) * size * 0.8;
+        var isActive = labels[i] === state.activeMove;
+        var energy = state.energies[labels[i]] || 0.5;
 
-    // Hexagon (Cube-Seiten)
-    for (let i = 0; i < 6; i++) {
-        const a = angles[i];
-        const x = cx + Math.cos(a) * size * 0.8;
-        const y = cy + Math.sin(a) * size * 0.8;
-        const isActive = labels[i] === state.activeMove;
-        const energy = state.energies[labels[i]] || 0.5;
-
-        // Glow
-        const glow = ctx.createRadialGradient(x, y, 0, x, y, 18);
-        glow.addColorStop(0, `${colors[i]}${Math.floor(0.1 + energy * 0.3) * 255}`);
+        var glow = ctx.createRadialGradient(x, y, 0, x, y, 18);
+        glow.addColorStop(0, colors[i] + Math.floor(0.1 + energy * 0.3) * 255);
         glow.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = glow;
         ctx.beginPath();
         ctx.arc(x, y, 18, 0, Math.PI * 2);
         ctx.fill();
 
-        // Kreis
-        ctx.strokeStyle = isActive ? colors[i] : `${colors[i]}44`;
+        ctx.strokeStyle = isActive ? colors[i] : colors[i] + '44';
         ctx.lineWidth = isActive ? 2 : 0.5;
         ctx.shadowColor = isActive ? colors[i] : 'transparent';
         ctx.shadowBlur = isActive ? 20 : 0;
@@ -508,28 +511,24 @@ function drawCube() {
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // Label
         ctx.fillStyle = isActive ? colors[i] : '#444';
         ctx.font = isActive ? '6px Consolas' : '5px Consolas';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         ctx.fillText(labels[i], x, y - 14);
 
-        // Energie-Balken
         ctx.fillStyle = '#1a1a2a';
         ctx.fillRect(x - 10, y + 6, 20, 3);
         ctx.fillStyle = colors[i];
         ctx.fillRect(x - 10, y + 6, 20 * energy, 3);
     }
 
-    // Zentrum
     ctx.fillStyle = 'rgba(255,215,61,0.05)';
     ctx.font = '10px Consolas';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('◈', cx, cy);
 
-    // NERD-Label
     ctx.fillStyle = 'rgba(255,215,61,0.03)';
     ctx.font = '6px Consolas';
     ctx.textBaseline = 'top';
@@ -537,16 +536,16 @@ function drawCube() {
 }
 
 function drawMovesRing() {
-    const r = radius * 0.75;
-    const n = 6;
-    const colors = ['#ff6b6b', '#6bff6b', '#6b6bff', '#ffd93d', '#ff44ff', '#6cf'];
-    const labels = ['ESSO', 'ROLLER', 'KASSE', 'DOOR', 'DOO', 'SHELL'];
+    var r = radius * 0.75;
+    var n = 6;
+    var colors = ['#ff6b6b', '#6bff6b', '#6b6bff', '#ffd93d', '#ff44ff', '#6cf'];
+    var labels = ['ESSO', 'ROLLER', 'KASSE', 'DOOR', 'DOO', 'SHELL'];
 
-    for (let i = 0; i < n; i++) {
-        const angle = (i / n) * Math.PI * 2 + state.cubeAngle * 0.3;
-        const x = cx + Math.cos(angle) * r;
-        const y = cy + Math.sin(angle) * r;
-        const isActive = labels[i] === state.activeMove;
+    for (var i = 0; i < n; i++) {
+        var angle = (i / n) * Math.PI * 2 + state.cubeAngle * 0.3;
+        var x = cx + Math.cos(angle) * r;
+        var y = cy + Math.sin(angle) * r;
+        var isActive = labels[i] === state.activeMove;
 
         ctx.fillStyle = isActive ? 'rgba(255,215,61,0.08)' : 'rgba(255,255,255,0.01)';
         ctx.shadowColor = isActive ? colors[i] : 'transparent';
@@ -565,26 +564,26 @@ function drawMovesRing() {
 }
 
 function drawTmpSlots() {
-    const slots = ['DA', 'NE', 'BEN'];
-    const roles = ['du', 'er', 'ich'];
-    const colors = ['#ff6b6b', '#6bff6b', '#ffd93d'];
+    var slots = ['DA', 'NE', 'BEN'];
+    var colors = ['#ff6b6b', '#6bff6b', '#ffd93d'];
 
     ctx.fillStyle = 'rgba(255,255,255,0.02)';
     ctx.fillRect(W - 120, 8, 112, 28);
 
-    slots.forEach((s, i) => {
-        const x = W - 116 + i * 36;
-        const slot = state.tmpSlots[s];
+    for (var i = 0; i < slots.length; i++) {
+        var s = slots[i];
+        var x = W - 116 + i * 36;
+        var slot = state.tmpSlots[s];
         ctx.fillStyle = colors[i];
         ctx.font = '6px Consolas';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        ctx.fillText(`${s}`, x + 16, 10);
+        ctx.fillText(s, x + 16, 10);
         ctx.fillStyle = '#444';
         ctx.font = '4px Consolas';
         ctx.textBaseline = 'top';
-        ctx.fillText(`${slot.role}`, x + 16, 22);
-    });
+        ctx.fillText(slot.role, x + 16, 22);
+    }
 
     ctx.fillStyle = 'rgba(255,255,255,0.02)';
     ctx.font = '4px Consolas';
@@ -594,7 +593,7 @@ function drawTmpSlots() {
 }
 
 // ============================================================
-// 8. CONTROLS
+// CONTROLS
 // ============================================================
 document.getElementById('btn-start').onclick = function() {
     state.running = !state.running;
@@ -626,7 +625,10 @@ document.getElementById('btn-reset').onclick = function() {
     document.getElementById('roller-value').textContent = '50%';
     document.getElementById('kasse-value').textContent = '50%';
     document.getElementById('shell-value').textContent = '50%';
-    document.querySelectorAll('.move').forEach(el => el.classList.remove('active'));
+    var els = document.querySelectorAll('.move');
+    for (var i = 0; i < els.length; i++) {
+        els[i].classList.remove('active');
+    }
     activateMove('SHELL');
     log('⟲ RESET — NERD zurückgesetzt', 'nerd');
 };
@@ -640,10 +642,10 @@ document.getElementById('btn-auto').onclick = function() {
         document.getElementById('state-display').textContent = '● auto';
         document.getElementById('state-display').style.color = 'var(--gold)';
         if (window.autoInterval) clearInterval(window.autoInterval);
-        window.autoInterval = setInterval(() => {
-            const idx = Math.floor(Math.random() * MOVE_KEYS.length);
+        window.autoInterval = setInterval(function() {
+            var idx = Math.floor(Math.random() * MOVE_KEYS.length);
             activateMove(MOVE_KEYS[idx]);
-            log(`🔄 ${MOVE_KEYS[idx]} aktiviert`, 'nerd');
+            log('🔄 ' + MOVE_KEYS[idx] + ' aktiviert', 'nerd');
         }, 2500);
         log('▶ AUTO · NERD rotiert', 'nerd');
     } else {
@@ -653,17 +655,18 @@ document.getElementById('btn-auto').onclick = function() {
 };
 
 // ============================================================
-// 9. MOVE-KLICKS
+// MOVE-KLICKS
 // ============================================================
-document.querySelectorAll('.move').forEach(el => {
-    el.onclick = function() {
-        const key = this.dataset.move;
+var moveEls = document.querySelectorAll('.move');
+for (var i = 0; i < moveEls.length; i++) {
+    moveEls[i].onclick = function() {
+        var key = this.getAttribute('data-move');
         activateMove(key);
     };
-});
+}
 
 // ============================================================
-// 10. TASTATUR
+// TASTATUR
 // ============================================================
 document.addEventListener('keydown', function(e) {
     if (e.key === ' ') { e.preventDefault(); document.getElementById('btn-start').click(); }
@@ -678,7 +681,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ============================================================
-// 11. UHR
+// UHR
 // ============================================================
 function updateClock() {
     document.getElementById('clock').textContent = '⏱️ ' + new Date().toLocaleTimeString();
@@ -687,13 +690,13 @@ setInterval(updateClock, 1000);
 updateClock();
 
 // ============================================================
-// 12. INIT
+// INIT
 // ============================================================
 log('✦ NERD Station · 6 Moves Cube', 'nerd');
 log('⚡ ESSO · 🔑 DOO · 🐚 SHELL · und 3 weitere', 'shell');
 log('⌨️  1=ESSO 2=ROLLER 3=KASSE 4=DOOR 5=DOO 6=SHELL', 'nerd');
 
-setTimeout(() => {
+setTimeout(function() {
     state.running = true;
     document.getElementById('btn-start').textContent = '⏸ STOP';
     document.getElementById('state-display').textContent = '● läuft';
