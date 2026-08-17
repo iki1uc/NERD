@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NERD · 6 MOVES CUBE · LIVE</title>
+<title>NERD · 6 MOVES CUBE · FLIESSENDE ACHSE</title>
 
 <style>
 :root {
@@ -95,12 +95,7 @@ main {
     overflow-y: auto;
     max-height: 100%;
 }
-#panel h3 {
-    font-size: 9px;
-    color: #666;
-    border-bottom: 1px solid #1a1a2a;
-    padding-bottom: 3px;
-}
+#panel h3 { font-size: 9px; color: #666; border-bottom: 1px solid #1a1a2a; padding-bottom: 3px; }
 
 #moves {
     display: grid;
@@ -132,7 +127,7 @@ main {
     color: #6a6a8a;
     line-height: 1.3;
     min-height: 30px;
-    max-height: 70px;
+    max-height: 60px;
     background: #06060a;
     border-radius: 4px;
     padding: 3px 5px;
@@ -227,7 +222,7 @@ button.danger:hover { background: #f44; color: #000; }
     <div id="canvas-wrap">
         <canvas id="nerdCanvas"></canvas>
         <div id="canvas-overlay">
-            <span class="cube">◈</span> NERD · 6 Moves Cube · 4u
+            <span class="cube">◈</span> NERD · 6 Moves Cube · fließende Achse
         </div>
     </div>
 
@@ -235,7 +230,7 @@ button.danger:hover { background: #f44; color: #000; }
         <h3>🎲 6 MOVES · CUBE</h3>
 
         <div id="moves">
-            <div class="move" data-move="ESSO">
+            <div class="move active" data-move="ESSO">
                 <span class="sym">⚡</span>
                 <span class="label">ESSO</span>
                 <span class="desc">Primärenergie</span>
@@ -268,15 +263,16 @@ button.danger:hover { background: #f44; color: #000; }
         </div>
 
         <div id="metrics">
-            <div class="metric esso"><div class="label">ESSO</div><div class="value" id="esso-value">0%</div></div>
-            <div class="metric roller"><div class="label">ROLLER</div><div class="value" id="roller-value">0%</div></div>
-            <div class="metric kasse"><div class="label">KASSE</div><div class="value" id="kasse-value">0%</div></div>
-            <div class="metric shell"><div class="label">SHELL</div><div class="value" id="shell-value">0%</div></div>
+            <div class="metric esso"><div class="label">ESSO</div><div class="value" id="esso-value">0</div></div>
+            <div class="metric roller"><div class="label">ROLLER</div><div class="value" id="roller-value">0</div></div>
+            <div class="metric kasse"><div class="label">KASSE</div><div class="value" id="kasse-value">0</div></div>
+            <div class="metric shell"><div class="label">SHELL</div><div class="value" id="shell-value">0</div></div>
         </div>
 
         <div id="log">
-            <div class="entry"><span class="time">[INIT]</span> <span class="msg nerd">✦ NERD Station · 6 Moves Cube</span></div>
+            <div class="entry"><span class="time">[INIT]</span> <span class="msg nerd">✦ NERD Station · 6 Moves Cube · fließende Achse</span></div>
             <div class="entry"><span class="time">[INIT]</span> <span class="msg shell">🐚 SHELL · Halterenergie aktiv</span></div>
+            <div class="entry"><span class="time">[INIT]</span> <span class="msg esso">⚡ ESSO · Primärenergie fließt</span></div>
         </div>
 
         <div id="controls">
@@ -294,7 +290,7 @@ button.danger:hover { background: #f44; color: #000; }
 
 <script>
 // ============================================================
-// NERD · 6 MOVES CUBE · ALLES IN EINER DATEI
+// NERD · 6 MOVES CUBE · FLIESSENDE ACHSE
 // ============================================================
 
 // --- MOVES ---
@@ -308,24 +304,15 @@ var MOVES = {
 };
 var MOVE_KEYS = ['ESSO', 'ROLLER', 'KASSE', 'DOOR', 'DOO', 'SHELL'];
 
-// --- TMP-SLOTS ---
-var TMP_SLOTS = {
-    DA:  { role: 'du', mode: ['swap','handover','leave'], state: 'active' },
-    NE:  { role: 'er', mode: ['swap','handover','leave'], state: 'active' },
-    BEN: { role: 'ich', mode: ['swap','handover','leave'], state: 'active' }
-};
-
-// --- NC.MATH ---
-var NC_MATH = {
-    signatur: '<BUCHSTABE>',
-    achsen: ['6e', 'x', 'y', 't', 'h', 'b'],
-    orbit: ['q', 'u', 'i', 'o'],
-    evo: ['QI', 'IQQ', 'upg', 'upd', 'rev'],
-    matrix: '3x3 → 9x9 → 81x81'
+// --- ACHSEN-DATEN (fließend) ---
+var AXIS_DATA = {
+    flow: 0,
+    active: 'ESSO',
+    counts: { ESSO: 0, ROLLER: 0, KASSE: 0, DOOR: 0, DOO: 0, SHELL: 0 }
 };
 
 // ============================================================
-// CANVAS SETUP
+// CANVAS SETUP — FIX
 // ============================================================
 var canvas = document.getElementById('nerdCanvas');
 var ctx = canvas.getContext('2d');
@@ -341,9 +328,13 @@ function resizeCanvas() {
     cx = W / 2;
     cy = H / 2;
     radius = Math.min(W, H) * 0.38;
+    console.log('Canvas resized:', W, H);
 }
-resizeCanvas();
+
+// Resize beim Laden UND bei Fensteränderung
+window.addEventListener('load', resizeCanvas);
 window.addEventListener('resize', resizeCanvas);
+setTimeout(resizeCanvas, 100);
 
 // ============================================================
 // STATE
@@ -353,7 +344,7 @@ var state = {
     autoMode: false,
     cycle: 0,
     t: 0,
-    activeMove: 'SHELL',
+    activeMove: 'ESSO',
     energies: {
         ESSO: 0.5,
         ROLLER: 0.5,
@@ -362,8 +353,9 @@ var state = {
         DOO: 0.5,
         SHELL: 0.5
     },
-    tmpSlots: TMP_SLOTS,
-    cubeAngle: 0
+    cubeAngle: 0,
+    counts: { ESSO: 0, ROLLER: 0, KASSE: 0, DOOR: 0, DOO: 0, SHELL: 0 },
+    flow: 0
 };
 
 // ============================================================
@@ -385,12 +377,18 @@ function log(msg, type) {
 }
 
 // ============================================================
-// NERD KERN
+// NERD KERN — MIT FLIESSENDER ACHSE
 // ============================================================
 
 function activateMove(key) {
     state.activeMove = key;
     var move = MOVES[key];
+
+    // Zähler erhöhen
+    state.counts[key] = (state.counts[key] || 0) + 1;
+    state.flow++;
+
+    // UI aktualisieren
     var els = document.querySelectorAll('.move');
     for (var i = 0; i < els.length; i++) {
         var el = els[i];
@@ -400,34 +398,34 @@ function activateMove(key) {
             el.classList.remove('active');
         }
     }
-    log(move.sym + ' ' + move.label + ' · ' + move.desc, move.class);
+
+    // Metriken
+    document.getElementById('esso-value').textContent = state.counts.ESSO;
+    document.getElementById('roller-value').textContent = state.counts.ROLLER;
+    document.getElementById('kasse-value').textContent = state.counts.KASSE;
+    document.getElementById('shell-value').textContent = state.counts.SHELL;
+
+    log(move.sym + ' ' + move.label + ' · ' + move.desc + ' (#' + state.counts[key] + ')', move.class);
 }
 
 function updateEnergies() {
     var e = state.energies;
     var t = state.t;
-    e.ESSO = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 0.3));
-    e.ROLLER = 0.3 + 0.7 * (0.5 + 0.5 * Math.cos(t * 0.25));
-    e.KASSE = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 0.35 + 1));
-    e.DOOR = 0.3 + 0.7 * (0.5 + 0.5 * Math.cos(t * 0.4 + 0.5));
-    e.DOO = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 0.2 + 2));
-    e.SHELL = 0.3 + 0.7 * (0.5 + 0.5 * Math.cos(t * 0.15 + 1.5));
+    var flow = state.flow / 10;
 
-    document.getElementById('esso-value').textContent = (e.ESSO * 100).toFixed(0) + '%';
-    document.getElementById('roller-value').textContent = (e.ROLLER * 100).toFixed(0) + '%';
-    document.getElementById('kasse-value').textContent = (e.KASSE * 100).toFixed(0) + '%';
-    document.getElementById('shell-value').textContent = (e.SHELL * 100).toFixed(0) + '%';
+    // Jeder Move bekommt Energie basierend auf Flow
+    e.ESSO = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 0.3 + flow * 0.2));
+    e.ROLLER = 0.3 + 0.7 * (0.5 + 0.5 * Math.cos(t * 0.25 + flow * 0.15));
+    e.KASSE = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 0.35 + 1 + flow * 0.1));
+    e.DOOR = 0.3 + 0.7 * (0.5 + 0.5 * Math.cos(t * 0.4 + 0.5 + flow * 0.05));
+    e.DOO = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 0.2 + 2 + flow * 0.25));
+    e.SHELL = 0.3 + 0.7 * (0.5 + 0.5 * Math.cos(t * 0.15 + 1.5 + flow * 0.3));
+
+    // Keine DOM-Updates mehr hier (nur Canvas)
 }
 
 function moveCube() {
-    state.cubeAngle += 0.02;
-    var slots = ['DA', 'NE', 'BEN'];
-    for (var i = 0; i < slots.length; i++) {
-        var s = slots[i];
-        var idx = (Math.floor(state.t * 0.1) + i) % slots.length;
-        var roles = ['du', 'er', 'ich'];
-        state.tmpSlots[s].role = roles[idx];
-    }
+    state.cubeAngle += 0.02 * (1 + state.flow * 0.01);
 }
 
 function shellStart() {
@@ -437,13 +435,19 @@ function shellStart() {
     log('🌀 ROLLER · Verbindung hergestellt', 'roller');
     log('📦 KASSE · Seitenenergie bereit', 'kasse');
     log('🚪 DOOR · Firewall-Emulator läuft', 'door');
-    log('✦ NERD = das gesamte System', 'nerd');
+    log('✦ NERD = das gesamte System · Flow=' + state.flow, 'nerd');
 }
 
 // ============================================================
-// RENDER
+// RENDER — FIX
 // ============================================================
 function render() {
+    // Canvas muss gültig sein
+    if (W === 0 || H === 0 || !canvas || !ctx) {
+        requestAnimationFrame(render);
+        return;
+    }
+
     ctx.clearRect(0, 0, W, H);
 
     var grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, W * 0.6);
@@ -452,16 +456,21 @@ function render() {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
+    if (radius < 20) {
+        requestAnimationFrame(render);
+        return;
+    }
+
     drawCube();
     drawMovesRing();
-    drawTmpSlots();
+    drawFlowStatus();
 
     state.t += 0.008;
     if (state.running) {
         state.cycle++;
         updateEnergies();
         moveCube();
-        if (state.cycle % 30 === 0) {
+        if (state.cycle % 20 === 0) {
             var idx = Math.floor(Math.random() * MOVE_KEYS.length);
             activateMove(MOVE_KEYS[idx]);
         }
@@ -470,7 +479,11 @@ function render() {
 
     requestAnimationFrame(render);
 }
-render();
+
+// Starte Render nach kurzer Verzögerung
+setTimeout(function() {
+    render();
+}, 200);
 
 // ============================================================
 // ZEICHEN-FUNKTIONEN
@@ -493,7 +506,9 @@ function drawCube() {
         var y = cy + Math.sin(a) * size * 0.8;
         var isActive = labels[i] === state.activeMove;
         var energy = state.energies[labels[i]] || 0.5;
+        var count = state.counts[labels[i]] || 0;
 
+        // Glow
         var glow = ctx.createRadialGradient(x, y, 0, x, y, 18);
         glow.addColorStop(0, colors[i] + Math.floor(0.1 + energy * 0.3) * 255);
         glow.addColorStop(1, 'rgba(0,0,0,0)');
@@ -502,6 +517,7 @@ function drawCube() {
         ctx.arc(x, y, 18, 0, Math.PI * 2);
         ctx.fill();
 
+        // Kreis
         ctx.strokeStyle = isActive ? colors[i] : colors[i] + '44';
         ctx.lineWidth = isActive ? 2 : 0.5;
         ctx.shadowColor = isActive ? colors[i] : 'transparent';
@@ -511,18 +527,27 @@ function drawCube() {
         ctx.stroke();
         ctx.shadowBlur = 0;
 
+        // Label
         ctx.fillStyle = isActive ? colors[i] : '#444';
         ctx.font = isActive ? '6px Consolas' : '5px Consolas';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         ctx.fillText(labels[i], x, y - 14);
 
+        // Zähler
+        ctx.fillStyle = '#333';
+        ctx.font = '4px Consolas';
+        ctx.textBaseline = 'top';
+        ctx.fillText('#' + count, x, y + 8);
+
+        // Energie-Balken
         ctx.fillStyle = '#1a1a2a';
         ctx.fillRect(x - 10, y + 6, 20, 3);
         ctx.fillStyle = colors[i];
         ctx.fillRect(x - 10, y + 6, 20 * energy, 3);
     }
 
+    // Zentrum
     ctx.fillStyle = 'rgba(255,215,61,0.05)';
     ctx.font = '10px Consolas';
     ctx.textAlign = 'center';
@@ -530,9 +555,9 @@ function drawCube() {
     ctx.fillText('◈', cx, cy);
 
     ctx.fillStyle = 'rgba(255,215,61,0.03)';
-    ctx.font = '6px Consolas';
+    ctx.font = '5px Consolas';
     ctx.textBaseline = 'top';
-    ctx.fillText('NERD = 6 MOVES', cx, cy + 14);
+    ctx.fillText('FLOW: ' + state.flow, cx, cy + 14);
 }
 
 function drawMovesRing() {
@@ -546,50 +571,42 @@ function drawMovesRing() {
         var x = cx + Math.cos(angle) * r;
         var y = cy + Math.sin(angle) * r;
         var isActive = labels[i] === state.activeMove;
+        var count = state.counts[labels[i]] || 0;
 
         ctx.fillStyle = isActive ? 'rgba(255,215,61,0.08)' : 'rgba(255,255,255,0.01)';
         ctx.shadowColor = isActive ? colors[i] : 'transparent';
         ctx.shadowBlur = isActive ? 10 : 0;
         ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.arc(x, y, 2 + Math.min(count, 5), 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = isActive ? colors[i] : '#222';
-        ctx.font = '5px Consolas';
+        ctx.font = '4px Consolas';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         ctx.fillText(labels[i], x, y - 6);
     }
 }
 
-function drawTmpSlots() {
-    var slots = ['DA', 'NE', 'BEN'];
-    var colors = ['#ff6b6b', '#6bff6b', '#ffd93d'];
+function drawFlowStatus() {
+    var flow = state.flow;
+    var color = flow > 20 ? '#4f4' : flow > 10 ? '#ffd93d' : '#666';
 
     ctx.fillStyle = 'rgba(255,255,255,0.02)';
-    ctx.fillRect(W - 120, 8, 112, 28);
+    ctx.fillRect(W - 80, 8, 72, 16);
 
-    for (var i = 0; i < slots.length; i++) {
-        var s = slots[i];
-        var x = W - 116 + i * 36;
-        var slot = state.tmpSlots[s];
-        ctx.fillStyle = colors[i];
-        ctx.font = '6px Consolas';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-        ctx.fillText(s, x + 16, 10);
-        ctx.fillStyle = '#444';
-        ctx.font = '4px Consolas';
-        ctx.textBaseline = 'top';
-        ctx.fillText(slot.role, x + 16, 22);
-    }
-
-    ctx.fillStyle = 'rgba(255,255,255,0.02)';
+    ctx.fillStyle = color;
     ctx.font = '4px Consolas';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText('TMP', W - 116, 32);
+    ctx.fillText('FLOW: ' + flow, W - 76, 10);
+
+    // Flow-Balken
+    ctx.fillStyle = '#1a1a2a';
+    ctx.fillRect(W - 76, 22, 60, 2);
+    ctx.fillStyle = color;
+    ctx.fillRect(W - 76, 22, Math.min(60, flow * 2), 2);
 }
 
 // ============================================================
@@ -615,21 +632,23 @@ document.getElementById('btn-reset').onclick = function() {
     state.cycle = 0;
     state.t = 0;
     state.cubeAngle = 0;
-    state.activeMove = 'SHELL';
+    state.activeMove = 'ESSO';
+    state.flow = 0;
+    state.counts = { ESSO: 0, ROLLER: 0, KASSE: 0, DOOR: 0, DOO: 0, SHELL: 0 };
     state.energies = { ESSO: 0.5, ROLLER: 0.5, KASSE: 0.5, DOOR: 0.5, DOO: 0.5, SHELL: 0.5 };
     document.getElementById('btn-start').textContent = '▶ START';
     document.getElementById('state-display').textContent = '● reset';
     document.getElementById('state-display').style.color = '#f44';
     document.getElementById('cycle-display').textContent = 'CUBE 0';
-    document.getElementById('esso-value').textContent = '50%';
-    document.getElementById('roller-value').textContent = '50%';
-    document.getElementById('kasse-value').textContent = '50%';
-    document.getElementById('shell-value').textContent = '50%';
+    document.getElementById('esso-value').textContent = '0';
+    document.getElementById('roller-value').textContent = '0';
+    document.getElementById('kasse-value').textContent = '0';
+    document.getElementById('shell-value').textContent = '0';
     var els = document.querySelectorAll('.move');
     for (var i = 0; i < els.length; i++) {
         els[i].classList.remove('active');
     }
-    activateMove('SHELL');
+    document.querySelector('.move[data-move="ESSO"]').classList.add('active');
     log('⟲ RESET — NERD zurückgesetzt', 'nerd');
 };
 
@@ -645,7 +664,7 @@ document.getElementById('btn-auto').onclick = function() {
         window.autoInterval = setInterval(function() {
             var idx = Math.floor(Math.random() * MOVE_KEYS.length);
             activateMove(MOVE_KEYS[idx]);
-            log('🔄 ' + MOVE_KEYS[idx] + ' aktiviert', 'nerd');
+            log('🔄 ' + MOVE_KEYS[idx] + ' aktiviert · Flow=' + state.flow, 'nerd');
         }, 2500);
         log('▶ AUTO · NERD rotiert', 'nerd');
     } else {
@@ -692,18 +711,20 @@ updateClock();
 // ============================================================
 // INIT
 // ============================================================
-log('✦ NERD Station · 6 Moves Cube', 'nerd');
+log('✦ NERD Station · 6 Moves Cube · fließende Achse', 'nerd');
 log('⚡ ESSO · 🔑 DOO · 🐚 SHELL · und 3 weitere', 'shell');
 log('⌨️  1=ESSO 2=ROLLER 3=KASSE 4=DOOR 5=DOO 6=SHELL', 'nerd');
 
 setTimeout(function() {
+    // Sicherstellen, dass Canvas bereit ist
+    resizeCanvas();
     state.running = true;
     document.getElementById('btn-start').textContent = '⏸ STOP';
     document.getElementById('state-display').textContent = '● läuft';
     document.getElementById('state-display').style.color = 'var(--gold)';
     shellStart();
     log('▶ NERD automatisch gestartet', 'nerd');
-}, 500);
+}, 600);
 </script>
 </body>
 </html>
